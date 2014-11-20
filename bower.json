@@ -1,0 +1,7 @@
+{
+  "name": "cryptographic-examples",
+  "version": "0.0.0",
+  "dependencies": {
+    "crypto-js": "https://crypto-js.googlecode.com/files/CryptoJS%20v3.1.2.zip"
+  }
+}
