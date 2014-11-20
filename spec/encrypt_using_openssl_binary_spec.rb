@@ -2,19 +2,11 @@ require 'base64'
 require 'open3'
 require 'openssl'
 require 'tempfile'
-require 'v8'
 
 describe 'encrypting with openssl' do
-  def part_after_equals(text)
-    text.scan(/=(.*)/)[0][0]
-  end
-
-  def hex_to_raw(text)
-    [text].pack('H*')
-  end
-
   let(:plaintext) { 'ciao' }
   let(:password) { 'passwordpasswordpasswordpassword' }
+  # We use a Tempfile for input to avoid problems with trailing newlines
   let(:input) { Tempfile.new('input') }
   let(:openssl_command) do
     <<-EOT
@@ -42,10 +34,7 @@ describe 'encrypting with openssl' do
   let(:ciphertext) { Base64.strict_decode64(ciphertext_base64) }
   let(:ciphertext_salt) { ciphertext[8 .. 15] }
   let(:encrypted) { ciphertext[16 .. -1] }
-  let(:decrypter) { OpenSSL::Cipher::AES.new(256, :CBC).decrypt }
-
-  let(:root) { Pathname.new(File.dirname(__dir__)) }
-  let(:cryptojs_pathname) { root.join('bower_components', 'crypto-js', 'rollups', 'aes.js') }
+  let(:decryptor) { OpenSSL::Cipher::AES.new(256, :CBC).decrypt }
 
   context 'using a password and -p' do
     it 'prints the salt' do
@@ -67,22 +56,22 @@ describe 'encrypting with openssl' do
     context 'decrypting with Ruby' do
       context 'using key and iv' do
         it 'decrypts correctly' do
-          decrypter.key = generated_key
-          decrypter.iv = generated_iv
-          result = decrypter.update(encrypted)
-          result << decrypter.final
+          decryptor.key = generated_key
+          decryptor.iv = generated_iv
+          result = decryptor.update(encrypted)
+          result << decryptor.final
 
           expect(result).to eq(plaintext)
         end
       end
 
-      context 'using password' do
+      context 'using password and salt' do
         # N.B. pkcs5_keyivgen is deprected
         it 'decrypts correctly' do
           # openssl does one iteration when derivind key and iv from a password
-          decrypter.pkcs5_keyivgen(password, ciphertext_salt, 1)
-          result = decrypter.update(encrypted)
-          result << decrypter.final
+          decryptor.pkcs5_keyivgen(password, ciphertext_salt, 1)
+          result = decryptor.update(encrypted)
+          result << decryptor.final
 
           expect(result).to eq(plaintext)
         end
@@ -90,13 +79,9 @@ describe 'encrypting with openssl' do
     end
 
     context 'decrypting with Javascript' do
-      let(:js) { V8::Context.new }
+      let(:js) { v8_with_cryptojs }
       let(:generated_key_base64) { Base64.strict_encode64(generated_key) }
       let(:generated_iv_base64) { Base64.strict_encode64(generated_iv) }
-
-      before do
-        js.load(cryptojs_pathname.to_s)
-      end
 
       context 'using key and iv' do
         let(:code) do
@@ -119,6 +104,7 @@ var plaintext = CryptoJS.AES.decrypt(ciphertext_base64, key, {iv: iv})
       end
 
       context 'using password' do
+        # The ciphertext contains the salt (bytes 8 to 15)
         let(:code) do
           <<-EOT
 var ciphertext_base64 = '#{ciphertext_base64}';
