@@ -5,6 +5,8 @@ Examples of encryption and decryption and interoperation between
 * Javascript (CryptoJS),
 * and Shell (openssl).
 
+The examples are the specs.
+
 # Dependencies
 
 You need to have bower (and nodejs and npm) installed.
