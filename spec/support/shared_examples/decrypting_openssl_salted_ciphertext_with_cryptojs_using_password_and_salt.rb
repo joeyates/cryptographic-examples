@@ -1,5 +1,5 @@
-shared_examples 'decrypting with CryptoJS using password and salt' do
-  context 'decrypting with CryptoJS using password and salt' do
+shared_examples 'decrypting openssl salted ciphertext with CryptoJS using password and salt' do
+  context 'decrypting openssl salted ciphertext with CryptoJS using password and salt' do
     # The ciphertext contains the salt (bytes 8 to 15)
     let(:js) { v8_with_cryptojs }
     let(:openssl_salted_ciphertext_base64) { Base64.strict_encode64(openssl_salted_ciphertext) }

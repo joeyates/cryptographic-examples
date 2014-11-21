@@ -44,7 +44,7 @@ describe 'encrypting with openssl' do
         let(:salt) { ciphertext_salt }
       end
 
-      include_examples 'decrypting with CryptoJS using password and salt'
+      include_examples 'decrypting openssl salted ciphertext with CryptoJS using password and salt'
     end
 
     context 'with -p' do
@@ -84,11 +84,12 @@ describe 'encrypting with openssl' do
         let(:iv) { iv_output }
       end
 
-      include_examples 'decrypting with CryptoJS using password and salt'
-      include_examples 'decrypting with CryptoJS using key and iv' do
+      include_examples 'decrypting openssl salted ciphertext with CryptoJS using password and salt'
+      include_examples 'decrypting unsalted ciphertext with CryptoJS using key and iv' do
         let(:key) { key_output }
         let(:iv) { iv_output }
       end
+      include_examples 'decrypting openssl salted ciphertext with CryptoJS using key and iv'
     end
   end
 end
