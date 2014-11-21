@@ -85,7 +85,10 @@ describe 'encrypting with openssl' do
       end
 
       include_examples 'decrypting with CryptoJS using password and salt'
-      include_examples 'decrypting with CryptoJS using key and iv'
+      include_examples 'decrypting with CryptoJS using key and iv' do
+        let(:key) { key_output }
+        let(:iv) { iv_output }
+      end
     end
   end
 end
