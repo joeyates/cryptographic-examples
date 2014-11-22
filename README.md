@@ -56,11 +56,16 @@ The command can optionally output the key and iv used.
 CryptoJS can handle encryption and decryption both using a password and salt
 and with a key an iv.
 
-Password decryption can handle ciphertext produced by the openssl binary,
-which has the salt included as bytes 9 - 16.
+By default, when decrypting, strings are treated as OpenSSL ciphertexts.
+So, if they start with `Salted__`, the following 8 bytes are tajen to be the
+salt.
+Alternatively, other strings can be processed by user-supplied deserializers,
+called 'formatters'.
+If a non-string is passed as the first parameter, it is assumed to be a
+`CipherParams` object and is passed on directly for decryption.
 
 The library has a structure called a "Word Array", which keys and ivs
-must be converted in order to be used.
+must be converted to in order to be used.
 
 # Dependencies
 
