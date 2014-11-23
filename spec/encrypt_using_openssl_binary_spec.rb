@@ -3,6 +3,19 @@ require 'open3'
 require 'openssl'
 require 'tempfile'
 
+class ShellCommand < Struct.new(:command)
+  attr_reader :stdout
+  attr_reader :stderr
+  attr_reader :exit_status
+
+  def run
+    _, out, err, wait_thr = Open3.popen3(command)
+    @stdout = out.read.split("\n")
+    @stderr = err.read.split("\n")
+    @exit_status = wait_thr.value.exitstatus
+  end
+end
+
 describe 'encrypting with openssl' do
   let(:plaintext) { 'ciao' }
   let(:password) { 'passwordpasswordpasswordpassword' }
@@ -16,17 +29,16 @@ describe 'encrypting with openssl' do
         -e -base64 #{openssl_params}
     EOT
   end
-  let(:openssl_results) do
+  let(:openssl_encryption_command) do
     input.write plaintext
     input.close
-    _, out, err, wait_thr = Open3.popen3(openssl_command)
-    stdout = out.read
-    stderr = err.read
+    command = ShellCommand.new(openssl_command)
+    command.run
     input.unlink
-    [stdout, stderr, wait_thr.value.exitstatus]
+    command
   end
-  let(:stdout) { openssl_results[0].split("\n") }
-  let(:openssl_exit_status) { openssl_results[2] }
+  let(:stdout) { openssl_encryption_command.stdout  }
+  let(:openssl_exit_status) { openssl_encryption_command.exit_status }
   let(:openssl_salted_ciphertext) { Base64.strict_decode64(ciphertext_output) }
   let(:encrypted) { openssl_salted_ciphertext[16 .. -1] }
 
