@@ -28,6 +28,10 @@ encrypted.toString();
         expect(decoded_output).to start_with('Salted__')
       end
 
+      include_examples 'decrypting openssl ciphertext using openssl with password' do
+        let(:ciphertext_output) { output }
+      end
+
       include_examples 'decrypting openssl salted ciphertext with Ruby using password and salt' do
         let(:openssl_salted_ciphertext) { decoded_output }
       end

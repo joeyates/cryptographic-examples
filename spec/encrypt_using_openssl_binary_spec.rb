@@ -1,40 +1,24 @@
 require 'base64'
-require 'open3'
 require 'openssl'
 require 'tempfile'
-
-class ShellCommand < Struct.new(:command)
-  attr_reader :stdout
-  attr_reader :stderr
-  attr_reader :exit_status
-
-  def run
-    _, out, err, wait_thr = Open3.popen3(command)
-    @stdout = out.read.split("\n")
-    @stderr = err.read.split("\n")
-    @exit_status = wait_thr.value.exitstatus
-  end
-end
 
 describe 'encrypting with openssl' do
   let(:plaintext) { 'ciao' }
   let(:password) { 'passwordpasswordpasswordpassword' }
   # We use a Tempfile for input to avoid problems with trailing newlines
-  let(:input) { Tempfile.new('input') }
-  let(:openssl_command) do
-    <<-EOT
+  let(:encryption_input) { Tempfile.new('input') }
+  let(:openssl_encryption_command) do
+    openssl_command = <<-EOT
       openssl enc -aes-256-cbc \
         -pass pass:"#{password}" \
-        -in #{input.path} \
+        -in #{encryption_input.path} \
         -e -base64 #{openssl_params}
     EOT
-  end
-  let(:openssl_encryption_command) do
-    input.write plaintext
-    input.close
+    encryption_input.write plaintext
+    encryption_input.close
     command = ShellCommand.new(openssl_command)
     command.run
-    input.unlink
+    encryption_input.unlink
     command
   end
   let(:stdout) { openssl_encryption_command.stdout  }
@@ -51,6 +35,7 @@ describe 'encrypting with openssl' do
         expect(openssl_salted_ciphertext).to start_with('Salted__')
       end
 
+      include_examples 'decrypting openssl ciphertext using openssl with password'
       include_examples 'decrypting openssl salted ciphertext with Ruby using password and salt'
       include_examples 'decrypting openssl salted ciphertext with CryptoJS using password and salt'
     end
