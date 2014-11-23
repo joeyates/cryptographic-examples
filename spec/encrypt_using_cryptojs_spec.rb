@@ -28,9 +28,8 @@ encrypted.toString();
         expect(decoded_output).to start_with('Salted__')
       end
 
-      include_examples 'decrypting with Ruby using password and salt' do
-        let(:encrypted) { decoded_output[16 .. -1] }
-        let(:salt) { ciphertext_salt }
+      include_examples 'decrypting openssl salted ciphertext with Ruby using password and salt' do
+        let(:openssl_salted_ciphertext) { decoded_output }
       end
 
       include_examples 'decrypting openssl salted ciphertext with CryptoJS using password and salt' do

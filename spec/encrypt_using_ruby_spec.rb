@@ -15,7 +15,7 @@ describe 'encrypting with Ruby' do
       encrypted << encryptor.final
     end
 
-    include_examples 'decrypting with Ruby using password and salt'
+    include_examples 'decrypting salted ciphertext with Ruby using password and salt'
 
     # As pkcs5_keyivgen doesn't show us the generated key and iv
     # we can't use them to decrypt

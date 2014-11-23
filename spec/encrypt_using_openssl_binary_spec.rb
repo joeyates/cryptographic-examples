@@ -28,7 +28,6 @@ describe 'encrypting with openssl' do
   let(:stdout) { openssl_results[0].split("\n") }
   let(:openssl_exit_status) { openssl_results[2] }
   let(:openssl_salted_ciphertext) { Base64.strict_decode64(ciphertext_output) }
-  let(:ciphertext_salt) { openssl_salted_ciphertext[8 .. 15] }
   let(:encrypted) { openssl_salted_ciphertext[16 .. -1] }
 
   context 'using a password' do
@@ -40,10 +39,7 @@ describe 'encrypting with openssl' do
         expect(openssl_salted_ciphertext).to start_with('Salted__')
       end
 
-      include_examples 'decrypting with Ruby using password and salt' do
-        let(:salt) { ciphertext_salt }
-      end
-
+      include_examples 'decrypting openssl salted ciphertext with Ruby using password and salt'
       include_examples 'decrypting openssl salted ciphertext with CryptoJS using password and salt'
     end
 
@@ -72,12 +68,12 @@ describe 'encrypting with openssl' do
       end
 
       specify 'the printed salt matches the salt in the ciphertext' do
+        ciphertext_salt = openssl_salted_ciphertext[8 .. 15]
+
         expect(ciphertext_salt).to eq(salt_output)
       end
 
-      include_examples 'decrypting with Ruby using password and salt' do
-        let(:salt) { ciphertext_salt }
-      end
+      include_examples 'decrypting openssl salted ciphertext with Ruby using password and salt'
 
       include_examples 'decrypting with Ruby using key and iv' do
         let(:key) { key_output }
