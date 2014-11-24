@@ -24,6 +24,9 @@ describe 'encrypting with Ruby' do
     include_examples 'decrypting salted ciphertext with CryptoJS using password and salt' do
       let(:ciphertext) { encrypted }
     end
+    include_examples 'decrypting openssl salted ciphertext with CryptoJS using password and salt' do
+      let(:openssl_salted_ciphertext) { 'Salted__' + salt + encrypted }
+    end
   end
 
   context 'using random key and iv' do
